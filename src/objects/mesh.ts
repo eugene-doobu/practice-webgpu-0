@@ -178,10 +178,10 @@ export default class Mesh{
         mat4.rotate(modelMatrix, modelMatrix, objectRotation[2], [0, 0, 1]);
         mat4.translate(modelMatrix, modelMatrix, objectPosition);
 
-        mat4.translate(viewMatrix, viewMatrix, eyePosition);
         mat4.rotate(viewMatrix, viewMatrix, eyeRotation[0], [1, 0, 0]);
         mat4.rotate(viewMatrix, viewMatrix, eyeRotation[1], [0, 1, 0]);
         mat4.rotate(viewMatrix, viewMatrix, eyeRotation[2], [0, 0, 1]);
+        mat4.translate(viewMatrix, viewMatrix, eyePosition);
 
         mat4.perspective(projectionMatrix, fovRadians, aspect, zNear, zFar);
 
