@@ -62,7 +62,7 @@ export default class Renderer{
         const depthTextureDesc: GPUTextureDescriptor = {
             size: [this.canvas.width, this.canvas.height, 1],
             dimension: '2d',
-            format: 'depth24plus',
+            format: 'depth24plus-stencil8',
             usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC
         };
 
