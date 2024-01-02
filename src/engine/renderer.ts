@@ -19,6 +19,7 @@ export default class Renderer{
     public async Start() {
         if (!await this.init()) return;
         this.resizeBackings();
+        this.encodeCommands();
     }
 
     private async init(): Promise<boolean>{
@@ -64,5 +65,51 @@ export default class Renderer{
 
         this.depthTexture = this.device.createTexture(depthTextureDesc);
         this.depthTextureView = this.depthTexture.createView();
+    }
+
+    private encodeCommands(){
+        let colorAttachment: GPURenderPassColorAttachment = {
+            view: this.colorTextureView,
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            loadOp: 'clear',
+            storeOp: 'store'
+        };
+
+        const depthAttachment: GPURenderPassDepthStencilAttachment = {
+            view: this.depthTextureView,
+            depthClearValue: 1,
+            depthLoadOp: 'clear',
+            depthStoreOp: 'store',
+            stencilClearValue: 0,
+            stencilLoadOp: 'clear',
+            stencilStoreOp: 'store'
+        };
+
+        const renderPassDesc: GPURenderPassDescriptor = {
+            colorAttachments: [colorAttachment],
+            depthStencilAttachment: depthAttachment
+        };
+
+        const commandEncoder: GPUCommandEncoder = this.device.createCommandEncoder();
+        const passEncoder: GPURenderPassEncoder = commandEncoder.beginRenderPass(renderPassDesc);
+        passEncoder.setViewport(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height,
+            0,
+            1
+        );
+        passEncoder.setScissorRect(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
+
+        // TODO: render mesh
+
+        passEncoder.end();
+        this.queue.submit([commandEncoder.finish()]);
     }
 }
