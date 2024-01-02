@@ -7,6 +7,6 @@ canvas.width = canvas.height = 800;
 const renderer = new Renderer(canvas);
 renderer.Start().then(r => {
     const geometryGenerator = new GeometryGenerator();
-    renderer.AddMesh(geometryGenerator.makeTriangle(0.7));
+    renderer.AddMesh(geometryGenerator.makeSquare(0.7));
     renderer.render();
 });

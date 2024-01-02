@@ -17,4 +17,25 @@ export default class GeometryGenerator{
         ]);
         return new MeshData(positions, colors, indices);
     };
+
+    public makeSquare(scale: number): MeshData{
+        let positions = new Float32Array([
+            -scale, -scale, 0.0,
+            scale, -scale, 0.0,
+            scale, scale, 0.0,
+            -scale, scale, 0.0,
+        ]);
+        let colors = new Float32Array([
+            1.0, 1.0, 1.0, 1.0,
+            0.0, 1.0, 1.0, 1.0,
+            1.0, 0.0, 1.0, 1.0,
+            1.0, 1.0, 0.0, 1.0,
+        ]);
+        let indices = new Uint16Array([
+            0, 1, 2,
+            0, 2, 3,
+        ]);
+
+        return new MeshData(positions, colors, indices);
+    }
 }
