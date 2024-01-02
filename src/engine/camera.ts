@@ -47,10 +47,10 @@ export default class Camera{
 
     public updateViewMatrix(): void {
         mat4.identity(this.viewMatrix);
+        mat4.translate(this.viewMatrix, this.viewMatrix, this.position);
         mat4.rotateX(this.viewMatrix, this.viewMatrix, this.rotation[0]);
         mat4.rotateY(this.viewMatrix, this.viewMatrix, this.rotation[1]);
         mat4.rotateZ(this.viewMatrix, this.viewMatrix, this.rotation[2]);
-        mat4.translate(this.viewMatrix, this.viewMatrix, this.position);
     }
 
     public setPosition(position: vec3): void {
