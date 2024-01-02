@@ -28,6 +28,7 @@ export default class Renderer{
             console.log("WebGPU가 지원되지 않습니다.");
             return false;
         }
+        console.log("WebGPU가 지원됩니다.");
 
         const adapter: GPUAdapter = await entry.requestAdapter();
         if (!adapter) {
@@ -37,6 +38,8 @@ export default class Renderer{
 
         this.device = await adapter.requestDevice();
         this.queue = this.device.queue;
+
+        return true;
     }
 
     private resizeBackings(){
