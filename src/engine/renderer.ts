@@ -15,6 +15,8 @@ export default class Renderer{
     private depthTexture: GPUTexture;
     private depthTextureView: GPUTextureView;
 
+    private meshes: Mesh[] = [];
+
     constructor(canvas: HTMLCanvasElement){
         this.canvas = canvas;
     }
@@ -22,7 +24,19 @@ export default class Renderer{
     public async Start() {
         if (!await this.init()) return;
         this.resizeBackings();
+    }
+
+    public render = () => {
+        this.colorTexture = this.context.getCurrentTexture();
+        this.colorTextureView = this.colorTexture.createView();
+
         this.encodeCommands();
+        requestAnimationFrame(this.render);
+    };
+
+    public AddMesh(meshData: MeshData): void{
+        const mesh = new Mesh(meshData, this.device);
+        this.meshes.push(mesh);
     }
 
     private async init(): Promise<boolean>{
@@ -110,23 +124,9 @@ export default class Renderer{
             this.canvas.height
         );
 
-        let positions = new Float32Array([
-            -0.7, -0.7, 0.0,
-            0.7, -0.7, 0.0,
-            0.0, 0.7, 0.0,
-        ]);
-        let colors = new Float32Array([
-            1.0, 0.0, 0.0, 1.0,
-            0.0, 1.0, 0.0, 1.0,
-            0.5, 0.5, 1.0, 1.0,
-        ]);
-        let indices = new Uint16Array([
-            0, 1, 2,
-        ]);
-
-        const meshData = new MeshData(positions, colors, indices);
-        const mesh = new Mesh(meshData, this.device);
-        mesh.render(passEncoder);
+        this.meshes.forEach(mesh => {
+            mesh.render(passEncoder);
+        });
 
         passEncoder.end();
         this.queue.submit([commandEncoder.finish()]);
