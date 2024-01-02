@@ -1,3 +1,6 @@
+import Mesh from "../objects/mesh";
+import MeshData from "../objects/meshData";
+
 export default class Renderer{
     private canvas: HTMLCanvasElement;
 
@@ -107,7 +110,23 @@ export default class Renderer{
             this.canvas.height
         );
 
-        // TODO: render mesh
+        let positions = new Float32Array([
+            -0.7, -0.7, 0.0,
+            0.7, -0.7, 0.0,
+            0.0, 0.7, 0.0,
+        ]);
+        let colors = new Float32Array([
+            1.0, 0.0, 0.0, 1.0,
+            0.0, 1.0, 0.0, 1.0,
+            0.5, 0.5, 1.0, 1.0,
+        ]);
+        let indices = new Uint16Array([
+            0, 1, 2,
+        ]);
+
+        const meshData = new MeshData(positions, colors, indices);
+        const mesh = new Mesh(meshData, this.device);
+        mesh.render(passEncoder);
 
         passEncoder.end();
         this.queue.submit([commandEncoder.finish()]);
