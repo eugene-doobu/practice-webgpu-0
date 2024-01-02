@@ -3,6 +3,7 @@ import MeshData from "./meshData";
 
 import vsCode from '../shaders/default.vert.wgsl';
 import fsCode from '../shaders/default.frag.wgsl';
+import Camera from "../engine/camera";
 
 export default class Mesh{
     positionBuffer: GPUBuffer;
@@ -159,17 +160,7 @@ export default class Mesh{
         const objectRotation = vec3.fromValues(45, 45, 45);
         const objectScale = vec3.fromValues(1, 1, 1);
 
-        const eyePosition = vec3.fromValues(0, 0, -5);
-        const eyeRotation = vec3.fromValues(0, 0, 0);
-
-        const fovRadians = 45 * Math.PI / 180;
-        const aspect = 1;
-        const zNear = 1;
-        const zFar = 100;
-
         let modelMatrix = mat4.create();
-        let viewMatrix = mat4.create();
-        let projectionMatrix = mat4.create();
 
         // 스자이공부
         mat4.scale(modelMatrix, modelMatrix, objectScale);
@@ -178,16 +169,10 @@ export default class Mesh{
         mat4.rotate(modelMatrix, modelMatrix, objectRotation[2], [0, 0, 1]);
         mat4.translate(modelMatrix, modelMatrix, objectPosition);
 
-        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[0], [1, 0, 0]);
-        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[1], [0, 1, 0]);
-        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[2], [0, 0, 1]);
-        mat4.translate(viewMatrix, viewMatrix, eyePosition);
-
-        mat4.perspective(projectionMatrix, fovRadians, aspect, zNear, zFar);
-
+        const camera = Camera.getInstance();
         const cameraArray = new Float32Array(36);
-        cameraArray.set(projectionMatrix, 0);
-        cameraArray.set(viewMatrix, 16);
+        cameraArray.set(camera.getProjectionMatrix(), 0);
+        cameraArray.set(camera.getViewMatrix(), 16);
 
         const modelArray = new Float32Array(16);
         modelArray.set(modelMatrix, 0);
