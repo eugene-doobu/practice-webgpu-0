@@ -66,11 +66,7 @@ export default class Camera{
     public moveForward(distance: number): void {
         const forward = vec3.create();
         vec3.set(forward, 0, 0, distance);
-        const toRadian = glMatrix.toRadian;
-        vec3.rotateX(forward, forward, [0, 0, 0], toRadian(this.rotation[0]));
-        vec3.rotateY(forward, forward, [0, 0, 0], toRadian(this.rotation[1]));
-        vec3.rotateZ(forward, forward, [0, 0, 0], toRadian(this.rotation[2]));
-        vec3.add(this.position, this.position, forward);
+        vec3.add(this.position, this.position, this.rotateVector(forward));
 
         this.clampPosition(this.position);
         this.updateViewMatrix();
@@ -79,11 +75,7 @@ export default class Camera{
     public moveRight(distance: number): void {
         const right = vec3.create();
         vec3.set(right, distance, 0, 0);
-        const toRadian = glMatrix.toRadian;
-        vec3.rotateX(right, right, [0, 0, 0], toRadian(this.rotation[0]));
-        vec3.rotateY(right, right, [0, 0, 0], toRadian(this.rotation[1]));
-        vec3.rotateZ(right, right, [0, 0, 0], toRadian(this.rotation[2]));
-        vec3.add(this.position, this.position, right);
+        vec3.add(this.position, this.position, this.rotateVector(right));
 
         this.clampPosition(this.position);
         this.updateViewMatrix();
@@ -92,14 +84,18 @@ export default class Camera{
     public moveUp(distance: number): void {
         const up = vec3.create();
         vec3.set(up, 0, distance, 0);
-        const toRadian = glMatrix.toRadian;
-        vec3.rotateX(up, up, [0, 0, 0], toRadian(this.rotation[0]));
-        vec3.rotateY(up, up, [0, 0, 0], toRadian(this.rotation[1]));
-        vec3.rotateZ(up, up, [0, 0, 0], toRadian(this.rotation[2]));
-        vec3.add(this.position, this.position, up);
+        vec3.add(this.position, this.position, this.rotateVector(up));
 
         this.clampPosition(this.position);
         this.updateViewMatrix();
+    }
+
+    private rotateVector(vector: vec3): vec3 {
+        const toRadian = glMatrix.toRadian;
+        vec3.rotateX(vector, vector, [0, 0, 0], toRadian(this.rotation[0]));
+        vec3.rotateY(vector, vector, [0, 0, 0], toRadian(this.rotation[1]));
+        vec3.rotateZ(vector, vector, [0, 0, 0], toRadian(this.rotation[2]));
+        return vector;
     }
 
     private clampPosition(position: vec3): vec3 {
