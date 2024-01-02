@@ -1,7 +1,8 @@
+import { glMatrix, mat4, vec3 } from 'gl-matrix';
 import MeshData from "./meshData";
 
-import vsCode from '../shaders/triangle.vert.wgsl';
-import fsCode from '../shaders/triangle.frag.wgsl';
+import vsCode from '../shaders/default.vert.wgsl';
+import fsCode from '../shaders/default.frag.wgsl';
 
 export default class Mesh{
     positionBuffer: GPUBuffer;
@@ -82,7 +83,20 @@ export default class Mesh{
             format: 'depth24plus-stencil8'
         };
 
-        const pipelineLayoutDesc = { bindGroupLayouts: [] };
+        const bindGroupLayout = this.device.createBindGroupLayout({
+            entries: [{
+                binding: 0, // camera uniforms
+                visibility: GPUShaderStage.VERTEX,
+                buffer: {},
+            }, {
+                binding: 1, // model uniform
+                visibility: GPUShaderStage.VERTEX,
+                buffer: {},
+            }]
+        });
+        const pipelineLayoutDesc = { bindGroupLayouts: [
+                bindGroupLayout // @group(0
+            ] };
         const layout = this.device.createPipelineLayout(pipelineLayoutDesc);
 
         const vertex: GPUVertexState = {
@@ -120,7 +134,70 @@ export default class Mesh{
     }
 
     public render(passEncoder: GPURenderPassEncoder){
+        const cameraBuffer = this.device.createBuffer({
+            size: 144, // Room for two 4x4 matrices and a vec3
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM
+        });
+
+        const modelBuffer = this.device.createBuffer({
+            size: 64, // Room for one 4x4 matrix
+            usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.UNIFORM
+        });
+
+        const bindGroup = this.device.createBindGroup({
+            layout: this.pipeline.getBindGroupLayout(0),
+            entries: [{
+                binding: 0,
+                resource: { buffer: cameraBuffer },
+            }, {
+                binding: 1,
+                resource: { buffer: modelBuffer },
+            }],
+        });
+
+        const objectPosition = vec3.fromValues(0, 0, 0);
+        const objectRotation = vec3.fromValues(45, 45, 45);
+        const objectScale = vec3.fromValues(1, 1, 1);
+
+        const eyePosition = vec3.fromValues(0, 0, -5);
+        const eyeRotation = vec3.fromValues(0, 0, 0);
+
+        const fovRadians = 45 * Math.PI / 180;
+        const aspect = 1;
+        const zNear = 1;
+        const zFar = 100;
+
+        let modelMatrix = mat4.create();
+        let viewMatrix = mat4.create();
+        let projectionMatrix = mat4.create();
+
+        // 스자이공부
+        mat4.scale(modelMatrix, modelMatrix, objectScale);
+        mat4.rotate(modelMatrix, modelMatrix, objectRotation[0], [1, 0, 0]);
+        mat4.rotate(modelMatrix, modelMatrix, objectRotation[1], [0, 1, 0]);
+        mat4.rotate(modelMatrix, modelMatrix, objectRotation[2], [0, 0, 1]);
+        mat4.translate(modelMatrix, modelMatrix, objectPosition);
+
+        mat4.translate(viewMatrix, viewMatrix, eyePosition);
+        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[0], [1, 0, 0]);
+        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[1], [0, 1, 0]);
+        mat4.rotate(viewMatrix, viewMatrix, eyeRotation[2], [0, 0, 1]);
+
+        mat4.perspective(projectionMatrix, fovRadians, aspect, zNear, zFar);
+
+        const cameraArray = new Float32Array(36);
+        cameraArray.set(projectionMatrix, 0);
+        cameraArray.set(viewMatrix, 16);
+
+        const modelArray = new Float32Array(16);
+        modelArray.set(modelMatrix, 0);
+
+        this.device.queue.writeBuffer(cameraBuffer, 0, cameraArray);
+        this.device.queue.writeBuffer(modelBuffer, 0, modelArray);
+
         passEncoder.setPipeline(this.pipeline);
+        passEncoder.setBindGroup(0, bindGroup);
+
         passEncoder.setVertexBuffer(0, this.positionBuffer);
         passEncoder.setVertexBuffer(1, this.colorBuffer);
         passEncoder.setIndexBuffer(this.indexBuffer, 'uint16');
